@@ -8,7 +8,7 @@ type PageProps = {
 };
 
 export default async function Page({ params }: PageProps) {
-  const shorturl = (await params).shorturl;
+  const shorturl = params.shorturl;
 
   const data = await prisma.link.findFirst({
     where: { shortCode: shorturl },
