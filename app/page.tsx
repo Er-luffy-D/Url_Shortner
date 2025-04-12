@@ -1,103 +1,172 @@
-import Image from "next/image";
+"use client";
+import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Link from "next/link";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [url, setUrl] = useState("");
+  const [shorturl, setShortUrl] = useState("");
+  const [generatedUrl, setGeneratedUrl] = useState(false);
+  const [shortenedUrl, setShortenedUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    setLoading(true);
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+    e.preventDefault();
+    axios.post(`${BACKEND_URL}/api/generate`, { url, shorturl }).then((response) => {
+      if (response.status === 200) {
+        setGeneratedUrl(true);
+        setLoading(false);
+        setShortenedUrl(`${BACKEND_URL}/${response.data.Shorturl}`);
+        setUrl("");
+        setShortUrl("");
+      } else if (response.status === 400) {
+        setLoading(false);
+        alert("Shorturl already exists for this url");
+        setGeneratedUrl(false);
+        setShortenedUrl("");
+        setUrl("");
+        setShortUrl("");
+      } else {
+        setLoading(false);
+        alert("Error generating short URL");
+      }
+    });
+  };
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+  useEffect(() => {
+    const root = window.document.documentElement;
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+      const isDark = savedTheme === "dark";
+      setIsDarkMode(isDark);
+      if (isDark) {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+    } else {
+      if (isDarkMode) {
+        root.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+      } else {
+        root.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+      }
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => {
+    const theme = localStorage.getItem("theme");
+    if (theme === "dark") {
+      localStorage.setItem("theme", "light");
+    } else {
+      localStorage.setItem("theme", "dark");
+    }
+    setIsDarkMode((prev) => !prev);
+  };
+  return (
+    <div>
+      <div>
+        <CardContainer className="inter-var">
+          <CardBody className="bg-gray-50 relative group/card  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[30rem] h-auto rounded-xl p-6 border  ">
+            <CardItem translateZ="100" className="text-xl font-bold text-neutral-600 dark:text-white">
+              Url Shortener
+            </CardItem>
+            <CardItem as="p" translateZ="80" className="text-neutral-500 text-sm max-w-sm mt-2 dark:text-neutral-300">
+              Shorten your links and share them with the world. No more long links!
+            </CardItem>
+            <form className="my-8" onSubmit={handleSubmit}>
+              <CardItem translateZ="100" className="w-full mt-4">
+                <div className="mb-4 flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
+                  <LabelInputContainer className="mb-4">
+                    <Label htmlFor="Url">Enter Url</Label>
+                    <Input
+                      id="Url"
+                      value={url}
+                      required
+                      onChange={(e) => setUrl(e.target.value)}
+                      placeholder="https://www.burogu.vercel.app"
+                      type="text"
+                    />
+                  </LabelInputContainer>
+                </div>
+                <LabelInputContainer className="mb-4">
+                  <Label htmlFor="Url">Enter Shorten Url</Label>
+                  <Input
+                    id="Url"
+                    value={shorturl}
+                    required
+                    onChange={(e) => setShortUrl(e.target.value)}
+                    placeholder="burogu"
+                    type="text"
+                  />
+                </LabelInputContainer>
+              </CardItem>
+              <button
+                className="group/btn relative block cursor-pointer z-50 my-10 h-10 w-full rounded-md bg-gradient-to-br from-gray-700 to-gray-500 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_#27272a_inset,0px_-1px_0px_0px_#27272a_inset]"
+                type="submit"
+              >
+                PRESS ENTER ➡
+                <BottomGradient />
+              </button>
+            </form>
+          </CardBody>
+        </CardContainer>
+      </div>
+      <div className="flex flex-col items-center justify-center mt-6">
+        {loading && (
+          <div className="text-lg font-semibold text-gray-800 dark:text-white bg-gray-100 dark:bg-black px-4 py-2 rounded-md shadow-sm dark:shadow-white">
+            <span className="text-gray-600 dark:text-gray-300">Generating Short URL...</span>
+          </div>
+        )}
+        {generatedUrl && (
+          <Link href={shortenedUrl} target="_blank">
+            <div className="text-lg font-semibold text-gray-800 dark:text-white bg-gray-100 dark:bg-black px-4 py-2 rounded-md shadow-sm dark:shadow-white">
+              <span className="text-gray-600 dark:text-gray-300">Shortened URL:</span>{" "}
+              <span className="text-blue-600 dark:text-blue-400 underline">{shortenedUrl}</span>
+            </div>
+          </Link>
+        )}
+      </div>
+
+      <div>
+        <button
+          type="button"
+          onClick={toggleDarkMode}
+          className="absolute top-4 right-4 p-2 rounded font-bold bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
+        >
+          {isDarkMode ? "Light" : "Dark"}
+        </button>
+      </div>
+      <footer className="mt-10 text-center text-gray-600 dark:text-gray-400">
+        Made with ❤️ by{" "}
         <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+          href="https://github.com/Er-luffy-D"
           target="_blank"
           rel="noopener noreferrer"
+          className="text-gray-600 dark:text-gray-400 hover:text-blue-800 dark:hover:text-gray-300"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
+          Piyush
         </a>
       </footer>
     </div>
   );
 }
+const BottomGradient = () => {
+  return (
+    <>
+      <span className="absolute inset-x-0 -bottom-px block h-px w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
+      <span className="absolute inset-x-10 -bottom-px mx-auto block h-px w-1/2 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 blur-sm transition duration-500 group-hover/btn:opacity-100" />
+    </>
+  );
+};
+
+const LabelInputContainer = ({ children, className }: { children: React.ReactNode; className?: string }) => {
+  return <div className={cn("flex w-full flex-col space-y-2", className)}>{children}</div>;
+};
