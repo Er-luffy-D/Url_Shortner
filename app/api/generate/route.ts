@@ -1,13 +1,11 @@
-import { PrismaClient } from "@/lib/generated/prisma";
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const { url, shorturl }: { url: string; shorturl: string } = await request.json();
   try {
-    const client = new PrismaClient();
-
     if (url && shorturl) {
-      const data = await client.link.findFirst({
+      const data = await prisma.link.findFirst({
         where: {
           shortCode: shorturl,
         },
@@ -27,7 +25,7 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       } else {
-        const urlData = await client.link.create({
+        const urlData = await prisma.link.create({
           data: {
             url: url,
             shortCode: shorturl,

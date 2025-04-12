@@ -10,22 +10,22 @@ export default function RedirectClient({ url }: { url: string }) {
     if (!url) return;
 
     const isInternal = url.startsWith("/");
-    let finalUrl = url;
 
-    if (!isInternal) {
-      const hasProtocol = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(url);
-      if (!hasProtocol) {
-        finalUrl = `http://${url}`;
-      }
-      window.location.href = finalUrl;
+    if (isInternal) {
+      router.push(url);
     } else {
-      router.push(finalUrl);
+      const hasProtocol = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(url);
+      const finalUrl = hasProtocol ? url : `http://${url}`;
+      window.location.href = finalUrl;
     }
-  }, [url]);
+  }, [url, router]);
 
   return (
-    <div className="flex h-screen items-center justify-center text-2xl bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-      <div className="ml-2 animate-spin h-40 w-40 border-8 border-blue-500 rounded-full border-t-transparent"></div>
+    <div className="flex h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
+      <div className="text-center">
+        <div className="animate-spin h-20 w-20 border-4 border-blue-500 rounded-full border-t-transparent mb-4 mx-auto" />
+        <p className="text-xl text-gray-800 dark:text-gray-200">Redirecting...</p>
+      </div>
     </div>
   );
 }

@@ -1,14 +1,19 @@
-import { PrismaClient } from "@/lib/generated/prisma";
-import RedirectClient from "./RedirectClient"; // <- new file
+import { prisma } from "@/lib/prisma";
+import RedirectClient from "./RedirectClient";
 
-export default async function Page({ params }: { params: { shorturl: string } }) {
-  const client = new PrismaClient();
+type PageProps = {
+  params: {
+    shorturl: string;
+  };
+};
+
+export default async function Page({ params }: PageProps) {
   const shorturl = (await params).shorturl;
 
-  const data = await client.link.findFirst({
+  const data = await prisma.link.findFirst({
     where: { shortCode: shorturl },
     select: { url: true },
   });
-  console.log(data);
+
   return <RedirectClient url={data?.url ?? "/Notfound"} />;
 }
