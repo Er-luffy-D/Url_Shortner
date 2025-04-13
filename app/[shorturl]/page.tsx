@@ -1,19 +1,27 @@
 import { prisma } from "@/lib/prisma";
 import RedirectClient from "./RedirectClient";
 
-export default async function Page({
-  params,
-}: {
-  params: { shorturl: string };
-}) {
-  const data = await prisma.link.findFirst({
-    where: { shortCode: params.shorturl },
-    select: { url: true },
-  });
+interface PageProps {
+  params: {
+    shorturl: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
 
-  if (!data?.url) {
+export default async function Page({ params }: PageProps) {
+  try {
+    const data = await prisma.link.findUnique({
+      where: { shortCode: params.shorturl },
+      select: { url: true },
+    });
+
+    if (!data?.url) {
+      return <RedirectClient url="/Notfound" />;
+    }
+
+    return <RedirectClient url={data.url} />;
+  } catch (error) {
+    console.error("Error fetching URL:", error);
     return <RedirectClient url="/Notfound" />;
   }
-
-  return <RedirectClient url={data.url} />;
 }
