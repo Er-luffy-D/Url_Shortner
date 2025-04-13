@@ -1,7 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import RedirectClient from "./RedirectClient";
 
-export default async function Page({ params }: { params: { shorturl: string } }) {
+interface PageProps {
+  params: {
+    shorturl: string;
+  };
+}
+
+export default async function Page({ params }: PageProps) {
   const data = await prisma.link.findFirst({
     where: { shortCode: params.shorturl },
     select: { url: true },
