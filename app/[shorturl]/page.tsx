@@ -1,17 +1,19 @@
 import { prisma } from "@/lib/prisma";
 import RedirectClient from "./RedirectClient";
 
-interface PageProps {
-  params: {
-    shorturl: string;
-  };
-}
-
-export default async function Page({ params }: PageProps) {
+export default async function Page({
+  params,
+}: {
+  params: { shorturl: string };
+}) {
   const data = await prisma.link.findFirst({
     where: { shortCode: params.shorturl },
     select: { url: true },
   });
 
-  return <RedirectClient url={data?.url ?? "/Notfound"} />;
+  if (!data?.url) {
+    return <RedirectClient url="/Notfound" />;
+  }
+
+  return <RedirectClient url={data.url} />;
 }
