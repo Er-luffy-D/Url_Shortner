@@ -1,17 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import RedirectClient from "./RedirectClient";
-
 interface PageProps {
-  params: {
-    shorturl: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
+	params: Promise<{ shorturl: string }>;
 }
 
 export default async function Page({ params }: PageProps) {
+  const {shorturl} =await params;
+  const Url = decodeURIComponent(shorturl);
   try {
     const data = await prisma.link.findUnique({
-      where: { shortCode: params.shorturl },
+      where: { shortCode: Url },
       select: { url: true },
     });
 
