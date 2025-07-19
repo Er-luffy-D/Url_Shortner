@@ -8,7 +8,7 @@ import axios from "axios";
 import Link from "next/link";
 
 export default function Home() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const [url, setUrl] = useState("");
   const [shorturl, setShortUrl] = useState("");
   const [generatedUrl, setGeneratedUrl] = useState(false);

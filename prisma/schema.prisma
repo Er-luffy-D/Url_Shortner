@@ -19,4 +19,5 @@ model Link {
   shortCode String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  count     Int      @default(0)
 }
